@@ -1,5 +1,12 @@
 @layer components {
     .App {
-        @apply min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800;
+        min-height: 100vh;
+        background: linear-gradient(to bottom right, rgb(248 250 252), rgb(241 245 249));
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .App {
+            background: linear-gradient(to bottom right, black, rgb(17 24 39));
+        }
     }
 }

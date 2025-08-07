@@ -280,13 +280,13 @@ export const ImageStretcher: React.FC = () => {
     }, [imageInfo, direction]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-black dark:to-gray-900">
             {/* Header */}
             <div className="text-center py-8">
                 <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
                     Image Stretcher
                 </h1>
-                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                <p className="text-lg text-slate-600 dark:text-gray-300 max-w-2xl mx-auto">
                     Upload an image and apply artistic stretching effects
                 </p>
             </div>
@@ -318,7 +318,7 @@ export const ImageStretcher: React.FC = () => {
                     {/* Controls */}
                     <div className="lg:w-80 flex-shrink-0">
                         <div className="controls-panel">
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6 text-center">
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center">
                                 Controls
                             </h3>
 
@@ -433,7 +433,7 @@ export const ImageStretcher: React.FC = () => {
 
                     {/* Processed Image */}
                     <div className="flex-1 flex flex-col items-center justify-center p-4">
-                        <h3 className="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-300">
+                        <h3 className="text-lg font-semibold mb-4 text-slate-700 dark:text-gray-200">
                             {imageInfo ? `Original Image: ${imageInfo.width} × ${imageInfo.height}px` : 'No Image'}
                         </h3>
                         <canvas
@@ -448,7 +448,7 @@ export const ImageStretcher: React.FC = () => {
                                 display: 'block'
                             }}
                         />
-                        <p className="text-sm text-slate-500 mt-2">
+                        <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">
                             {isProcessing ? 'Processing...' : 'Canvas ready'}
                         </p>
                     </div>
