@@ -449,9 +449,6 @@ export const ImageStretcher: React.FC = () => {
                                 display: 'block'
                             }}
                         />
-                        <p className="text-sm text-slate-500 dark:text-gray-400 mt-2">
-                            {isProcessing ? 'Processing...' : 'Canvas ready'}
-                        </p>
                     </div>
                 </div>
             )}
