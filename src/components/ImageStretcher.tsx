@@ -81,19 +81,33 @@ export const ImageStretcher: React.FC = () => {
                     const canvas = canvasRef.current;
                     const ctx = canvas.getContext('2d')!;
 
-                    // Scale down large images to fit in display
-                    const maxDisplaySize = 600;
-                    let displayWidth = img.width;
-                    let displayHeight = img.height;
+                    // Calculate responsive display size based on aspect ratio and available space
+                    const containerMaxWidth = window.innerWidth * 0.8; // 80vw
+                    const containerMaxHeight = window.innerHeight * 0.8; // 80vh
+                    const imageAspectRatio = img.width / img.height;
+                    const containerAspectRatio = containerMaxWidth / containerMaxHeight;
 
-                    if (img.width > maxDisplaySize || img.height > maxDisplaySize) {
-                        const scale = Math.min(maxDisplaySize / img.width, maxDisplaySize / img.height);
-                        displayWidth = Math.floor(img.width * scale);
-                        displayHeight = Math.floor(img.height * scale);
+                    let displayWidth: number;
+                    let displayHeight: number;
+
+                    if (imageAspectRatio > containerAspectRatio) {
+                        // Image is wider than container - fit to width
+                        displayWidth = Math.min(img.width, containerMaxWidth);
+                        displayHeight = displayWidth / imageAspectRatio;
+                    } else {
+                        // Image is taller than container - fit to height
+                        displayHeight = Math.min(img.height, containerMaxHeight);
+                        displayWidth = displayHeight * imageAspectRatio;
                     }
 
-                    canvas.width = displayWidth;
-                    canvas.height = displayHeight;
+                    // Ensure we don't exceed the original image dimensions unless necessary
+                    if (displayWidth > img.width && displayHeight > img.height) {
+                        displayWidth = img.width;
+                        displayHeight = img.height;
+                    }
+
+                    canvas.width = Math.floor(displayWidth);
+                    canvas.height = Math.floor(displayHeight);
 
                     // Clear canvas and draw image
                     ctx.clearRect(0, 0, displayWidth, displayHeight);
@@ -103,6 +117,8 @@ export const ImageStretcher: React.FC = () => {
                         originalSize: `${img.width}x${img.height}`,
                         displaySize: `${displayWidth}x${displayHeight}`,
                         canvasSize: `${canvas.width}x${canvas.height}`,
+                        aspectRatio: imageAspectRatio.toFixed(2),
+                        containerSize: `${containerMaxWidth}x${containerMaxHeight}`,
                         canvasRef: !!canvasRef.current
                     });
                 } else {
@@ -190,21 +206,49 @@ export const ImageStretcher: React.FC = () => {
                             return;
                         }
 
-                        // Set canvas to stretched image size and draw the result
-                        canvas.width = stretchedImageData.width;
-                        canvas.height = stretchedImageData.height;
+                        // Set canvas to display the stretched image with responsive sizing
+                        const containerMaxWidth = window.innerWidth * 0.8; // 80vw
+                        const containerMaxHeight = window.innerHeight * 0.8; // 80vh
+                        const stretchedAspectRatio = stretchedImageData.width / stretchedImageData.height;
+                        const containerAspectRatio = containerMaxWidth / containerMaxHeight;
 
-                        console.log('Canvas size set to:', canvas.width, 'x', canvas.height);
+                        let displayWidth: number;
+                        let displayHeight: number;
 
-                        // Create ImageData object and draw it
+                        if (stretchedAspectRatio > containerAspectRatio) {
+                            // Stretched image is wider than container - fit to width
+                            displayWidth = Math.min(stretchedImageData.width, containerMaxWidth);
+                            displayHeight = displayWidth / stretchedAspectRatio;
+                        } else {
+                            // Stretched image is taller than container - fit to height
+                            displayHeight = Math.min(stretchedImageData.height, containerMaxHeight);
+                            displayWidth = displayHeight * stretchedAspectRatio;
+                        }
+
+                        canvas.width = Math.floor(displayWidth);
+                        canvas.height = Math.floor(displayHeight);
+
+                        console.log('Canvas display size set to:', canvas.width, 'x', canvas.height);
+
+                        // Create ImageData object for the stretched result
                         const newImageData = ctx.createImageData(stretchedImageData.width, stretchedImageData.height);
                         newImageData.data.set(stretchedImageData.data);
-                        ctx.putImageData(newImageData, 0, 0);
+                        
+                        // Create a temporary canvas to hold the full-size stretched image
+                        const tempCanvas = document.createElement('canvas');
+                        const tempCtx = tempCanvas.getContext('2d')!;
+                        tempCanvas.width = stretchedImageData.width;
+                        tempCanvas.height = stretchedImageData.height;
+                        tempCtx.putImageData(newImageData, 0, 0);
+
+                        // Draw the stretched image scaled to fit the display canvas
+                        ctx.clearRect(0, 0, displayWidth, displayHeight);
+                        ctx.drawImage(tempCanvas, 0, 0, displayWidth, displayHeight);
 
                         console.log('Stretched image drawn to canvas');
 
-                        // Create blob URL for download
-                        canvas.toBlob((blob: Blob | null) => {
+                        // Create blob URL for download using the full-size stretched image (tempCanvas)
+                        tempCanvas.toBlob((blob: Blob | null) => {
                             if (blob) {
                                 if (processedImageUrl) {
                                     URL.revokeObjectURL(processedImageUrl);
@@ -255,6 +299,19 @@ export const ImageStretcher: React.FC = () => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [imageInfo, stretchRate, startingPixel, direction]);
+
+    // Handle window resize to update canvas display size
+    useEffect(() => {
+        if (!imageInfo || !canvasRef.current) return;
+
+        const handleResize = () => {
+            // Re-apply stretch with new display dimensions
+            applyStretch();
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [imageInfo, applyStretch]);
 
     // Download processed image
     const downloadImage = useCallback(() => {
@@ -322,11 +379,13 @@ export const ImageStretcher: React.FC = () => {
                             className="image-canvas"
                             title={imageInfo ? `Image: ${imageInfo.file.name}` : 'Upload an image to get started'}
                             style={{
-                                maxWidth: '80vw',
-                                maxHeight: '80vh',
                                 border: '2px solid #333',
                                 backgroundColor: 'white',
-                                display: 'block'
+                                display: 'block',
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                width: 'auto',
+                                height: 'auto'
                             }}
                         />
                     </div>
