@@ -1,108 +1,90 @@
 @layer components {
-  .upload-btn {
-    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
-           text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all 
-           duration-200 hover:scale-105 hover:shadow-xl focus:ring-4 focus:ring-blue-300;
-  }
+    .upload-btn {
+        @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:ring-4 focus:ring-blue-300;
+    }
 
-  .controls-panel {
-    @apply bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 
-           dark:border-slate-700 backdrop-blur-sm;
-    min-width: 280px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
+    .controls-panel {
+        @apply bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-700 backdrop-blur-sm;
+        min-width: 280px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
 
-  .control-group {
-    @apply mb-6;
-  }
+    .control-group {
+        @apply mb-6;
+    }
 
-  .control-label {
-    @apply block mb-3 font-semibold text-slate-700 dark:text-slate-300 text-sm uppercase tracking-wide;
-  }
+    .control-label {
+        @apply block mb-3 font-semibold text-slate-700 dark:text-slate-300 text-sm uppercase tracking-wide;
+    }
 
-  .slider {
-    @apply w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer 
-           focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600;
-  }
+    .slider {
+        @apply w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600;
+    }
 
-  .slider::-webkit-slider-thumb {
-    @apply appearance-none w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full 
-           cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200;
-  }
+    .slider::-webkit-slider-thumb {
+        @apply appearance-none w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200;
+    }
 
-  .slider::-moz-range-thumb {
-    @apply w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full cursor-pointer 
-           border-0 shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200;
-  }
+    .slider::-moz-range-thumb {
+        @apply w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full cursor-pointer border-0 shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200;
+    }
 
-  .direction-controls {
-    @apply grid grid-cols-3 gap-2 max-w-xs mx-auto;
-  }
+    .direction-controls {
+        @apply grid grid-cols-3 gap-2 max-w-xs mx-auto;
+    }
 
-  .radio-label {
-    @apply flex items-center justify-center p-3 rounded-lg cursor-pointer transition-all 
-           duration-200 text-sm font-medium border-2 border-slate-200 dark:border-slate-600
-           hover:border-blue-300 hover:bg-blue-50 dark:hover:border-blue-600 dark:hover:bg-blue-900/20
-           text-slate-700 dark:text-slate-300;
-  }
+    .radio-label {
+        @apply flex items-center justify-center p-3 rounded-lg cursor-pointer transition-all duration-200 text-sm font-medium border-2 border-slate-200 dark:border-slate-600 hover:border-blue-300 hover:bg-blue-50 dark:hover:border-blue-600 dark:hover:bg-blue-900/20 text-slate-700 dark:text-slate-300;
+    }
 
-  .radio-label:has(input:checked) {
-    @apply border-blue-500 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 
-           shadow-md;
-  }
+    .radio-label:has(input:checked) {
+        @apply border-blue-500 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shadow-md;
+    }
 
-  .radio-label input[type="radio"] {
-    @apply sr-only;
-  }
+    .radio-label input[type="radio"] {
+        @apply sr-only;
+    }
 
-  .direction-up {
-    @apply col-start-2;
-  }
+    .direction-up {
+        @apply col-start-2;
+    }
 
-  .direction-left {
-    @apply col-start-1 row-start-2;
-  }
+    .direction-left {
+        @apply col-start-1 row-start-2;
+    }
 
-  .direction-right {
-    @apply col-start-3 row-start-2;
-  }
+    .direction-right {
+        @apply col-start-3 row-start-2;
+    }
 
-  .direction-down {
-    @apply col-start-2 row-start-3;
-  }
+    .direction-down {
+        @apply col-start-2 row-start-3;
+    }
 
-  .action-btn {
-    @apply font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 
-           hover:scale-105 hover:shadow-xl focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed
-           disabled:transform-none disabled:shadow-md;
-  }
+    .action-btn {
+        @apply font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md;
+    }
 
-  .random-btn {
-    @apply bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 
-           text-white focus:ring-emerald-300 mr-3 mb-3;
-  }
+    .random-btn {
+        @apply bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white focus:ring-emerald-300 mr-3 mb-3;
+    }
 
-  .save-btn {
-    @apply bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 
-           text-white focus:ring-slate-300 mb-3;
-  }
+    .save-btn {
+        @apply bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white focus:ring-slate-300 mb-3;
+    }
 
-  .image-canvas {
-    @apply border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 
-           transition-all duration-300 hover:shadow-3xl;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    /* Remove object-contain and let canvas handle its own sizing */
-  }
+    .image-canvas {
+        @apply border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 transition-all duration-300 hover:shadow-3xl;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        /* Remove object-contain and let canvas handle its own sizing */
+    }
 
-  .processing-indicator {
-    @apply text-center text-blue-600 dark:text-blue-400 font-semibold p-4 
-           bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 
-           rounded-lg shadow-md animate-pulse;
-  }
+    .processing-indicator {
+        @apply text-center text-blue-600 dark:text-blue-400 font-semibold p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg shadow-md animate-pulse;
+    }
 
-  .value-display {
-    @apply inline-block bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-md text-sm 
-           font-mono font-semibold text-slate-800 dark:text-slate-200 ml-2;
-  }
+    .value-display {
+        @apply inline-block bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-md text-sm font-mono font-semibold text-slate-800 dark:text-slate-200 ml-2;
+    }
 }
