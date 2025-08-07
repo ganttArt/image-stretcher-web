@@ -311,14 +311,30 @@ export const ImageStretcher: React.FC = () => {
             )}
 
             {imageInfo && (
-                <div className="flex flex-col lg:flex-row gap-8 p-4">
+                <div className="flex flex-col lg:flex-row gap-6 p-4">
                     {/* Hidden canvas for processing original image */}
                     <canvas ref={originalCanvasRef} style={{ display: 'none' }} />
 
-                    {/* Controls */}
-                    <div className="lg:w-80 flex-shrink-0">
+                    {/* Processed Image - Main content area */}
+                    <div className="flex-1 flex flex-col items-center justify-center p-4 order-1 lg:order-1">
+                        <canvas
+                            ref={canvasRef}
+                            className="image-canvas"
+                            title={imageInfo ? `Image: ${imageInfo.file.name}` : 'Upload an image to get started'}
+                            style={{
+                                maxWidth: '80vw',
+                                maxHeight: '80vh',
+                                border: '2px solid #333',
+                                backgroundColor: 'white',
+                                display: 'block'
+                            }}
+                        />
+                    </div>
+
+                    {/* Controls - Compact sidebar */}
+                    <div className="lg:w-64 flex-shrink-0 order-2 lg:order-2">
                         <div className="controls-panel">
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 text-center">
                                 Controls
                             </h3>
 
@@ -369,7 +385,7 @@ export const ImageStretcher: React.FC = () => {
                                             checked={direction === 'up'}
                                             onChange={(e) => setDirection(e.target.value as 'up')}
                                         />
-                                        ↑ Up
+                                        ↑
                                     </label>
                                     <label className="radio-label direction-left">
                                         <input
@@ -378,7 +394,7 @@ export const ImageStretcher: React.FC = () => {
                                             checked={direction === 'left'}
                                             onChange={(e) => setDirection(e.target.value as 'left')}
                                         />
-                                        ← Left
+                                        ←
                                     </label>
                                     <label className="radio-label direction-right">
                                         <input
@@ -387,7 +403,7 @@ export const ImageStretcher: React.FC = () => {
                                             checked={direction === 'right'}
                                             onChange={(e) => setDirection(e.target.value as 'right')}
                                         />
-                                        Right →
+                                        →
                                     </label>
                                     <label className="radio-label direction-down">
                                         <input
@@ -396,27 +412,41 @@ export const ImageStretcher: React.FC = () => {
                                             checked={direction === 'down'}
                                             onChange={(e) => setDirection(e.target.value as 'down')}
                                         />
-                                        ↓ Down
+                                        ↓
                                     </label>
                                 </div>
                             </div>
 
+                            {/* Horizontal Rule */}
+                            <hr className="border-gray-200 dark:border-gray-600 my-4" />
+
                             {/* Action Buttons */}
                             <div className="control-group">
-                                <button
-                                    onClick={downloadImage}
-                                    className="action-btn save-btn w-full mb-3"
-                                    disabled={!processedImageUrl || isProcessing}
-                                >
-                                    Save Image
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="action-btn flex-1"
+                                        style={{ 
+                                            background: 'linear-gradient(to right, rgb(100 116 139), rgb(71 85 105))',
+                                            color: 'white'
+                                        }}
+                                    >
+                                        New Image
+                                    </button>
 
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="action-btn upload-btn w-full"
-                                >
-                                    New Image
-                                </button>
+                                    <button
+                                        onClick={downloadImage}
+                                        className="action-btn flex-1"
+                                        disabled={!processedImageUrl || isProcessing}
+                                        style={{ 
+                                            background: 'linear-gradient(to right, rgb(59 130 246), rgb(37 99 235))',
+                                            color: 'white'
+                                        }}
+                                    >
+                                        Save
+                                        <img src="/downloadIcon.svg" alt="Download" className="w-4 h-4 ml-2 inline" />
+                                    </button>
+                                </div>
 
                                 <input
                                     type="file"
@@ -433,22 +463,6 @@ export const ImageStretcher: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    {/* Processed Image */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-4">
-                        <canvas
-                            ref={canvasRef}
-                            className="image-canvas"
-                            title={imageInfo ? `Image: ${imageInfo.file.name}` : 'Upload an image to get started'}
-                            style={{
-                                maxWidth: '600px',
-                                maxHeight: '600px',
-                                border: '2px solid #333',
-                                backgroundColor: 'white',
-                                display: 'block'
-                            }}
-                        />
                     </div>
                 </div>
             )}
