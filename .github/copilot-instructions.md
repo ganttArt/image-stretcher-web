@@ -29,6 +29,17 @@ This is a React TypeScript web application that replicates the functionality of 
 - Use modern ES6+ JavaScript features
 - Maintain clean, readable code with proper TypeScript types
 
+## ESLint and Code Quality
+- **Always observe ESLint rules** - fix warnings and errors before committing
+- **React Hooks Rules**: Be careful with useEffect dependencies to avoid infinite loops
+    - When ESLint suggests adding a function to dependencies, consider if it will cause re-renders
+    - Use `// eslint-disable-next-line react-hooks/exhaustive-deps` only when intentional
+    - **It's acceptable to disable ESLint rules if they would cause bugs or infinite loops in the code**
+- **TypeScript Rules**: Remove unused variables and imports
+- **Switch Statement Rules**: Use block scopes `{}` for case statements with variable declarations
+- **Code Organization**: Remove dead code and unused functions
+- Run `npm run lint` to check for issues before making changes
+
 ## Image Processing Algorithm
 The application should replicate the Python algorithm that:
 1. Rotates images based on stretch direction

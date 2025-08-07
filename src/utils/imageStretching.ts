@@ -1,28 +1,17 @@
-// Utility functions for image stretching algorithms
-// Replicates the functionality from the Python stretching_helpers.py
-
-export interface ImageData {
-    data: Uint8ClampedArray;
-    width: number;
-    height: number;
-}
-
 export interface StretchParams {
     intensity: number;
     startingPixel: number;
     direction: 'up' | 'down' | 'left' | 'right';
 }
 
-export const DIRECTION_TO_DEGREES = {
-    left: 90,
-    right: 270,
-    up: 180,
-    down: 0
-} as const;
+export interface StretchedImageData {
+    data: Uint8ClampedArray;
+    width: number;
+    height: number;
+}
 
 /**
- * Creates an index list for stretching based on intensity
- * Replicates the create_index_list function from Python
+ * Create index list based on intensity (replicating Python create_index_list)
  */
 export function createIndexList(multiplicationFactor: number = 13): number[] {
     const inverseValueDict: { [key: number]: number } = {
@@ -52,157 +41,149 @@ export function createIndexList(multiplicationFactor: number = 13): number[] {
 }
 
 /**
- * Creates a gradient between two pixel rows
- * Replicates the create_gradient function from Python
+ * Create gradient between two rows of pixels (replicating Python create_gradient)
  */
-export function createGradient(
-    row1: Uint8ClampedArray,
-    row2: Uint8ClampedArray,
-    gradientSize: number,
-    width: number
-): Uint8ClampedArray[] {
-    const gradient: Uint8ClampedArray[] = [];
+function createGradient(twoRowArray: Uint8ClampedArray[], gradientSize: number, width: number): Uint8ClampedArray[] {
+    const gradientArray: Uint8ClampedArray[] = [];
 
     // Initialize gradient array
     for (let i = 0; i < gradientSize + 2; i++) {
-        gradient.push(new Uint8ClampedArray(width * 4));
+        gradientArray.push(new Uint8ClampedArray(width * 4));
     }
 
     // Set first and last rows
-    gradient[0].set(row1);
-    gradient[gradient.length - 1].set(row2);
+    gradientArray[0].set(twoRowArray[0]);
+    gradientArray[gradientSize + 1].set(twoRowArray[1]);
 
-    // Calculate intermediate rows
-    for (let step = 1; step <= gradientSize; step++) {
-        const ratio = step / (gradientSize + 1);
-
-        for (let x = 0; x < width; x++) {
-            const baseIndex = x * 4;
-
-            // Interpolate R, G, B values (skip alpha channel at index 3)
-            for (let channel = 0; channel < 3; channel++) {
-                const idx = baseIndex + channel;
-                const startValue = row1[idx];
-                const endValue = row2[idx];
-                gradient[step][idx] = Math.round(startValue + (endValue - startValue) * ratio);
+    // Create gradient between rows
+    for (let gradientRow = 1; gradientRow <= gradientSize; gradientRow++) {
+        for (let col = 0; col < width; col++) {
+            for (let c = 0; c < 3; c++) { // RGB only, keep A as 255
+                const startVal = gradientArray[0][col * 4 + c];
+                const endVal = gradientArray[gradientSize + 1][col * 4 + c];
+                const step = (endVal - startVal) / (gradientSize + 1);
+                gradientArray[gradientRow][col * 4 + c] = Math.round(startVal + step * gradientRow);
             }
-            // Set alpha channel
-            gradient[step][baseIndex + 3] = 255;
+            // Keep alpha channel
+            gradientArray[gradientRow][col * 4 + 3] = 255;
         }
     }
 
-    return gradient;
+    return gradientArray;
 }
 
 /**
- * Rotates image data by specified degrees
+ * Build new image using index list and gradients (replicating Python build_new_image)
  */
-export function rotateImageData(
-    imageData: ImageData,
-    degrees: number
-): ImageData {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
+function buildNewImage(indexList: number[], sourceImageData: ImageData, startingPixel: number): StretchedImageData {
+    const width = sourceImageData.width;
+    const height = sourceImageData.height;
+    const sourceData = sourceImageData.data;
 
-    // Handle 90-degree rotations
-    if (degrees === 90 || degrees === 270) {
-        canvas.width = imageData.height;
-        canvas.height = imageData.width;
-    } else {
-        canvas.width = imageData.width;
-        canvas.height = imageData.height;
-    }
+    console.log('Building new image with:', { width, height, startingPixel, indexListLength: indexList.length });
 
-    // Create ImageData object
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d')!;
-    tempCanvas.width = imageData.width;
-    tempCanvas.height = imageData.height;
-
-    const tempImageData = tempCtx.createImageData(imageData.width, imageData.height);
-    tempImageData.data.set(imageData.data);
-    tempCtx.putImageData(tempImageData, 0, 0);
-
-    // Apply rotation
-    ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((degrees * Math.PI) / 180);
-    ctx.drawImage(tempCanvas, -imageData.width / 2, -imageData.height / 2);
-    ctx.restore();
-
-    const rotatedImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    return {
-        data: rotatedImageData.data,
-        width: canvas.width,
-        height: canvas.height
-    };
-}
-
-/**
- * Applies the stretching effect to the image
- * Replicates the build_new_image function from Python
- */
-export function buildStretchedImage(
-    indexList: number[],
-    sourceImage: ImageData,
-    startingPixel: number
-): ImageData {
-    const { width, height, data } = sourceImage;
-    const bytesPerPixel = 4; // RGBA
-    const rowBytes = width * bytesPerPixel;
-
-    // Calculate new height based on stretching
+    // Calculate new height based on index list
     let newHeight = startingPixel;
-    for (let i = startingPixel; i < height - 1 && i - startingPixel < indexList.length; i++) {
-        newHeight += indexList[i - startingPixel] + 1;
+    for (let i = 0; i < Math.min(indexList.length, height - startingPixel - 1); i++) {
+        newHeight += indexList[i] + 1;
     }
 
-    const newImageData = new Uint8ClampedArray(newHeight * width * bytesPerPixel);
+    console.log('Calculated new height:', newHeight);
 
-    // Copy unchanged rows before starting pixel
-    for (let y = 0; y < startingPixel && y < height; y++) {
-        const sourceStart = y * rowBytes;
-        const destStart = y * rowBytes;
-        newImageData.set(data.slice(sourceStart, sourceStart + rowBytes), destStart);
+    // Create new image data array
+    const newData = new Uint8ClampedArray(newHeight * width * 4);
+
+    // Copy rows before starting pixel unchanged
+    for (let row = 0; row < startingPixel; row++) {
+        const sourceStart = row * width * 4;
+        const targetStart = row * width * 4;
+        for (let i = 0; i < width * 4; i++) {
+            newData[targetStart + i] = sourceData[sourceStart + i];
+        }
     }
 
-    let currentRow = startingPixel;
+    let newRowIndex = startingPixel;
+    let indexListIndex = 0;
 
-    // Apply stretching from starting pixel onwards
-    for (let y = startingPixel; y < height - 1 && y - startingPixel < indexList.length; y++) {
-        const sourceRowStart = y * rowBytes;
-        const nextRowStart = (y + 1) * rowBytes;
+    // Process rows from starting pixel using index list
+    for (let sourceRow = startingPixel; sourceRow < height - 1 && indexListIndex < indexList.length; sourceRow++) {
+        if (newRowIndex >= newHeight) break;
 
-        const row1 = data.slice(sourceRowStart, sourceRowStart + rowBytes);
-        const row2 = data.slice(nextRowStart, nextRowStart + rowBytes);
+        const gradientSize = indexList[indexListIndex];
 
-        const gradientSize = indexList[y - startingPixel];
-        const gradient = createGradient(row1, row2, gradientSize, width);
+        // Get two adjacent rows
+        const row1 = new Uint8ClampedArray(width * 4);
+        const row2 = new Uint8ClampedArray(width * 4);
+
+        for (let i = 0; i < width * 4; i++) {
+            row1[i] = sourceData[sourceRow * width * 4 + i];
+            row2[i] = sourceData[(sourceRow + 1) * width * 4 + i];
+        }
+
+        // Create gradient between the two rows
+        const gradientArray = createGradient([row1, row2], gradientSize, width);
 
         // Copy gradient rows to new image
-        for (let g = 0; g < gradient.length - 1 && currentRow < newHeight; g++) {
-            const destStart = currentRow * rowBytes;
-            newImageData.set(gradient[g], destStart);
-            currentRow++;
+        for (let gradRow = 0; gradRow < gradientArray.length - 1 && newRowIndex < newHeight; gradRow++) {
+            const targetStart = newRowIndex * width * 4;
+            for (let i = 0; i < width * 4; i++) {
+                newData[targetStart + i] = gradientArray[gradRow][i];
+            }
+            newRowIndex++;
         }
+
+        indexListIndex++;
     }
 
+    console.log('Final new image dimensions:', { width, height: newRowIndex });
+
     return {
-        data: newImageData,
-        width,
-        height: newHeight
+        data: newData,
+        width: width,
+        height: newRowIndex
     };
 }
 
 /**
- * Main function to stretch an image
- * Replicates the stretch_image function from Python
+ * Rotate image data 90 degrees clockwise or counterclockwise
+ */
+function rotateImageData(imageData: ImageData, clockwise: boolean = true): ImageData {
+    const { width, height, data } = imageData;
+    const newWidth = height;
+    const newHeight = width;
+    const newData = new Uint8ClampedArray(newWidth * newHeight * 4);
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const sourceIndex = (y * width + x) * 4;
+
+            let newX, newY;
+            if (clockwise) {
+                newX = height - 1 - y;
+                newY = x;
+            } else {
+                newX = y;
+                newY = width - 1 - x;
+            }
+
+            const targetIndex = (newY * newWidth + newX) * 4;
+
+            for (let c = 0; c < 4; c++) {
+                newData[targetIndex + c] = data[sourceIndex + c];
+            }
+        }
+    }
+
+    return new ImageData(newData, newWidth, newHeight);
+}
+
+/**
+ * Main stretch function with support for all directions
  */
 export function stretchImage(
     imageData: ImageData,
     params: StretchParams
-): ImageData {
+): StretchedImageData {
     const { intensity, startingPixel, direction } = params;
 
     console.log('stretchImage called with:', {
@@ -216,108 +197,124 @@ export function stretchImage(
     try {
         // Create index list for stretching intensity
         const indexList = createIndexList(intensity);
-        console.log('Index list created:', indexList.slice(0, 10)); // Show first 10 values
+        console.log('Index list created:', indexList.slice(0, 10));
 
-        // For now, let's just apply a simple stretch without rotation
-        // Get the pixel data as array
-        const data = new Uint8ClampedArray(imageData.data);
-        const width = imageData.width;
-        const height = imageData.height;
+        let workingImageData = imageData;
+        let workingStartingPixel = startingPixel;
 
-        console.log('About to apply stretching:', {
-            direction,
-            startingPixel,
-            width,
-            height,
-            intensity,
-            willStretch: (
-                (direction === 'right' && startingPixel < width) ||
-                (direction === 'left' && startingPixel < width) ||
-                (direction === 'down' && startingPixel < height) ||
-                (direction === 'up' && startingPixel < height)
-            )
-        });
+        // Rotate image and adjust starting pixel based on direction
+        switch (direction) {
+            case 'down':
+                // No rotation needed, this is our base case
+                workingStartingPixel = Math.min(startingPixel, imageData.height - 1);
+                console.log('Down direction: no rotation needed');
+                break;
 
-        // Apply stretching effect based on direction
-        if (direction === 'right' && startingPixel < width) {
-            console.log('Starting right stretch from pixel', startingPixel);
-            let pixelsModified = 0;
+            case 'up':
+                // Rotate 180 degrees (rotate twice)
+                workingImageData = rotateImageData(imageData, true);
+                workingImageData = rotateImageData(workingImageData, true);
+                workingStartingPixel = workingImageData.height - Math.min(startingPixel, imageData.height - 1) - 1;
+                console.log('Up direction: rotated 180 degrees');
+                break;
 
-            // Make the stretch more dramatic by using a larger multiplier
-            const stretchMultiplier = Math.max(3, intensity * 2);
-            console.log('Using stretch multiplier:', stretchMultiplier);
+            case 'right':
+                // Rotate 90 degrees clockwise so right becomes down
+                workingImageData = rotateImageData(imageData, true);
+                workingStartingPixel = workingImageData.height - Math.min(startingPixel, imageData.width - 1) - 1;
+                console.log('Right direction: rotated 90° clockwise');
+                break;
 
-            // Stretch pixels to the right from startingPixel
-            for (let y = 0; y < height; y++) {
-                for (let x = startingPixel + 1; x < width; x++) {
-                    // Create stretching effect by copying pixels from closer to the starting line
-                    const pixelFromStart = x - startingPixel;
+            case 'left':
+                // Rotate 90 degrees counterclockwise so left becomes down
+                workingImageData = rotateImageData(imageData, false);
+                workingStartingPixel = Math.min(startingPixel, imageData.width - 1);
+                console.log('Left direction: rotated 90° counterclockwise');
+                break;
 
-                    // Calculate how far back to look for the source pixel
-                    // Use a logarithmic scale to create more dramatic stretching further from start
-                    const stretchFactor = Math.min(stretchMultiplier, Math.ceil(pixelFromStart / 10));
-                    const sourceX = Math.max(startingPixel, x - stretchFactor);
-
-                    for (let c = 0; c < 4; c++) { // RGBA channels
-                        const targetIndex = (y * width + x) * 4 + c;
-                        const sourceIndex = (y * width + sourceX) * 4 + c;
-                        data[targetIndex] = data[sourceIndex];
-                    }
-                    pixelsModified++;
-                }
-            }
-
-            console.log('Right stretch complete. Pixels modified:', pixelsModified);
-
-        } else if (direction === 'left' && startingPixel < width) {
-            console.log('Starting left stretch from pixel', startingPixel);
-            let pixelsModified = 0;
-
-            const stretchMultiplier = Math.max(3, intensity * 2);
-            console.log('Using stretch multiplier:', stretchMultiplier);
-
-            // Stretch pixels to the left from startingPixel
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < startingPixel; x++) {
-                    const distanceFromStart = startingPixel - x;
-                    const stretchAmount = Math.min(stretchMultiplier, distanceFromStart);
-                    const sourceX = Math.min(startingPixel, x + stretchAmount);
-
-                    for (let c = 0; c < 4; c++) { // RGBA channels
-                        const targetIndex = (y * width + x) * 4 + c;
-                        const sourceIndex = (y * width + sourceX) * 4 + c;
-                        data[targetIndex] = data[sourceIndex];
-                    }
-                    pixelsModified++;
-                }
-            }
-
-            console.log('Left stretch complete. Pixels modified:', pixelsModified);
-
-        } else {
-            console.log('No stretch applied - conditions not met');
+            default:
+                console.log('Unknown direction, using down as default');
+                workingStartingPixel = Math.min(startingPixel, imageData.height - 1);
         }
 
-        console.log('Simple stretch applied');
-        return {
-            data: data,
-            width: width,
-            height: height
-        };
+        console.log('Working image dimensions:', {
+            width: workingImageData.width,
+            height: workingImageData.height,
+            startingPixel: workingStartingPixel
+        });
 
-        // Original stretching code commented out for debugging:
-        /*
-        // Rotate image based on direction
-        const rotatedImage = rotateImageData(imageData, DIRECTION_TO_DEGREES[direction]);
-        
-        // Apply stretching
-        const stretchedImage = buildStretchedImage(indexList, rotatedImage, startingPixel);
-        
-        // Rotate back to original orientation
-        const finalImage = rotateImageData(stretchedImage, 360 - DIRECTION_TO_DEGREES[direction]);
-        
-        return finalImage;
-        */
+        // Apply the stretch (always in downward direction now)
+        if (workingStartingPixel < workingImageData.height) {
+            console.log('Applying stretch from row', workingStartingPixel);
+
+            let stretchedData = buildNewImage(indexList, workingImageData, workingStartingPixel);
+
+            // Rotate back to original orientation
+            switch (direction) {
+                case 'down': {
+                    // No rotation back needed
+                    console.log('Down direction: no rotation back needed');
+                    break;
+                }
+
+                case 'up': {
+                    // Rotate 180 degrees back
+                    const tempImageData1 = new ImageData(stretchedData.data, stretchedData.width, stretchedData.height);
+                    let rotatedBack1 = rotateImageData(tempImageData1, true);
+                    rotatedBack1 = rotateImageData(rotatedBack1, true);
+                    stretchedData = {
+                        data: rotatedBack1.data,
+                        width: rotatedBack1.width,
+                        height: rotatedBack1.height
+                    };
+                    console.log('Up direction: rotated back 180 degrees');
+                    break;
+                }
+
+                case 'right': {
+                    // Rotate 90 degrees counterclockwise back
+                    const tempImageData2 = new ImageData(stretchedData.data, stretchedData.width, stretchedData.height);
+                    const rotatedBack2 = rotateImageData(tempImageData2, false);
+                    stretchedData = {
+                        data: rotatedBack2.data,
+                        width: rotatedBack2.width,
+                        height: rotatedBack2.height
+                    };
+                    console.log('Right direction: rotated back 90° counterclockwise');
+                    break;
+                }
+
+                case 'left': {
+                    // Rotate 90 degrees clockwise back
+                    const tempImageData3 = new ImageData(stretchedData.data, stretchedData.width, stretchedData.height);
+                    const rotatedBack3 = rotateImageData(tempImageData3, true);
+                    stretchedData = {
+                        data: rotatedBack3.data,
+                        width: rotatedBack3.width,
+                        height: rotatedBack3.height
+                    };
+                    console.log('Left direction: rotated back 90° clockwise');
+                    break;
+                }
+            }
+
+            console.log('Stretch complete:', {
+                originalDimensions: `${imageData.width}x${imageData.height}`,
+                finalDimensions: `${stretchedData.width}x${stretchedData.height}`,
+                direction
+            });
+
+            return stretchedData;
+
+        } else {
+            console.log('Invalid starting pixel, returning original');
+            return {
+                data: new Uint8ClampedArray(imageData.data),
+                width: imageData.width,
+                height: imageData.height
+            };
+        }
+
     } catch (error) {
         console.error('Error in stretchImage:', error);
         // Return original image as fallback

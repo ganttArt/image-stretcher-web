@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { stretchImage, type StretchParams } from '../utils/imageStretching_new';
+import { stretchImage, type StretchParams } from '../utils/imageStretching';
 import './ImageStretcher.css';
 
 interface ImageInfo {
@@ -253,6 +253,7 @@ export const ImageStretcher: React.FC = () => {
             console.log('Clearing auto-stretch timeout');
             clearTimeout(timeoutId);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [imageInfo, intensity, startingPixel, direction]);
 
     // Download processed image
