@@ -1,5 +1,5 @@
 export interface StretchParams {
-    intensity: number;
+    stretchRate: number;
     startingPixel: number;
     direction: 'up' | 'down' | 'left' | 'right';
 }
@@ -11,9 +11,10 @@ export interface StretchedImageData {
 }
 
 /**
- * Create index list based on intensity (replicating Python create_index_list)
+ * Create index list based on stretch rate (replicating Python create_index_list)
+ * Higher values create faster degradation into uniform color
  */
-export function createIndexList(multiplicationFactor: number = 13): number[] {
+export function createIndexList(stretchRate: number = 13): number[] {
     const inverseValueDict: { [key: number]: number } = {
         13: 1, 12: 1.25, 11: 1.5, 10: 1.75, 9: 2, 8: 2.25, 7: 2.5, 6: 2.75,
         5: 3, 4: 3.25, 3: 3.5, 2: 3.75, 1: 4
@@ -24,10 +25,10 @@ export function createIndexList(multiplicationFactor: number = 13): number[] {
         [55, 1], [89, 1], [144, 1], [233, 1], [377, 1], [610, 1], [987, 1]
     ];
 
-    // Apply multiplication factor
+    // Apply stretch rate
     pairs.forEach(pair => {
         pair[0] = pair[0] * 1;
-        pair[1] = Math.floor(pair[1] * inverseValueDict[multiplicationFactor]);
+        pair[1] = Math.floor(pair[1] * inverseValueDict[stretchRate]);
     });
 
     const indexList: number[] = [];
@@ -184,19 +185,19 @@ export function stretchImage(
     imageData: ImageData,
     params: StretchParams
 ): StretchedImageData {
-    const { intensity, startingPixel, direction } = params;
+    const { stretchRate, startingPixel, direction } = params;
 
     console.log('stretchImage called with:', {
         imageWidth: imageData.width,
         imageHeight: imageData.height,
-        intensity,
+        stretchRate,
         startingPixel,
         direction
     });
 
     try {
-        // Create index list for stretching intensity
-        const indexList = createIndexList(intensity);
+        // Create index list for stretch rate
+        const indexList = createIndexList(stretchRate);
         console.log('Index list created:', indexList.slice(0, 10));
 
         let workingImageData = imageData;

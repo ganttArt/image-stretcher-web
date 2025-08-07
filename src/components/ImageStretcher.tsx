@@ -11,7 +11,7 @@ interface ImageInfo {
 
 export const ImageStretcher: React.FC = () => {
     const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null);
-    const [intensity, setIntensity] = useState(13);
+    const [stretchRate, setStretchRate] = useState(13);
     const [direction, setDirection] = useState<'up' | 'down' | 'left' | 'right'>('right');
     const [startingPixel, setStartingPixel] = useState(100);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -158,7 +158,7 @@ export const ImageStretcher: React.FC = () => {
             });
 
             const params: StretchParams = {
-                intensity,
+                stretchRate,
                 startingPixel,
                 direction
             };
@@ -236,7 +236,7 @@ export const ImageStretcher: React.FC = () => {
             console.error('Error processing image:', error);
             setIsProcessing(false);
         }
-    }, [imageInfo, intensity, startingPixel, direction, getImageData, processedImageUrl]);
+    }, [imageInfo, stretchRate, startingPixel, direction, getImageData, processedImageUrl]);
 
     // Auto-apply stretch when parameters change (with debouncing)
     useEffect(() => {
@@ -254,7 +254,7 @@ export const ImageStretcher: React.FC = () => {
             clearTimeout(timeoutId);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [imageInfo, intensity, startingPixel, direction]);
+    }, [imageInfo, stretchRate, startingPixel, direction]);
 
     // Download processed image
     const downloadImage = useCallback(() => {
@@ -322,20 +322,24 @@ export const ImageStretcher: React.FC = () => {
                                 Controls
                             </h3>
 
-                            {/* Intensity Control */}
+                            {/* Stretch Rate Control */}
                             <div className="control-group">
-                                <label htmlFor="intensity" className="control-label">
-                                    Intensity: {intensity}
+                                <label htmlFor="stretch-rate" className="control-label">
+                                    Stretch Rate: {stretchRate}
                                 </label>
                                 <input
-                                    id="intensity"
+                                    id="stretch-rate"
                                     type="range"
                                     min="1"
                                     max="13"
-                                    value={intensity}
-                                    onChange={(e) => setIntensity(parseInt(e.target.value))}
+                                    value={stretchRate}
+                                    onChange={(e) => setStretchRate(parseInt(e.target.value))}
                                     className="slider"
                                 />
+                                <div className="flex justify-between text-xs text-slate-500 dark:text-gray-400 mt-1">
+                                    <span>Gradual</span>
+                                    <span>Rapid</span>
+                                </div>
                             </div>
 
                             {/* Starting Pixel Control */}
