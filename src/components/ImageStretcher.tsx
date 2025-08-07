@@ -437,9 +437,6 @@ export const ImageStretcher: React.FC = () => {
 
                     {/* Processed Image */}
                     <div className="flex-1 flex flex-col items-center justify-center p-4">
-                        <h3 className="text-lg font-semibold mb-4 text-slate-700 dark:text-gray-200">
-                            {imageInfo ? `Original Image: ${imageInfo.width} × ${imageInfo.height}px` : 'No Image'}
-                        </h3>
                         <canvas
                             ref={canvasRef}
                             className="image-canvas"
