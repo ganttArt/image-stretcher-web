@@ -83,7 +83,7 @@ function buildNewImage(indexList: number[], sourceImageData: ImageData, starting
 
     console.log('Building new image with:', { width, height, startingPixel, indexListLength: indexList.length });
 
-    // Calculate new height based on index list
+    // Calculate new height based on index list (don't constrain yet)
     let newHeight = startingPixel;
     for (let i = 0; i < Math.min(indexList.length, height - startingPixel - 1); i++) {
         newHeight += indexList[i] + 1;
@@ -142,6 +142,74 @@ function buildNewImage(indexList: number[], sourceImageData: ImageData, starting
         data: newData,
         width: width,
         height: newRowIndex
+    };
+}
+
+/**
+ * Crop stretched image to not exceed original dimensions
+ */
+function cropToOriginalSize(stretchedData: StretchedImageData, originalWidth: number, originalHeight: number, direction: 'up' | 'down' | 'left' | 'right'): StretchedImageData {
+    const { width, height, data } = stretchedData;
+    
+    // Always crop to exact original dimensions
+    const cropWidth = originalWidth;
+    const cropHeight = originalHeight;
+    
+    // If already the correct size, return as-is
+    if (width === cropWidth && height === cropHeight) {
+        return stretchedData;
+    }
+    
+    console.log('Cropping stretched image from', `${width}x${height}`, 'to', `${cropWidth}x${cropHeight}`, 'direction:', direction);
+    
+    // Create cropped data
+    const croppedData = new Uint8ClampedArray(cropWidth * cropHeight * 4);
+    
+    // Determine starting positions based on direction
+    let startX = 0;
+    let startY = 0;
+    
+    switch (direction) {
+        case 'down':
+            // Keep top part, crop bottom
+            startX = 0;
+            startY = 0;
+            break;
+        case 'up':
+            // Keep bottom part, crop top
+            startX = 0;
+            startY = Math.max(0, height - cropHeight);
+            break;
+        case 'right':
+            // Keep left part, crop right
+            startX = 0;
+            startY = 0;
+            break;
+        case 'left':
+            // Keep right part, crop left
+            startX = Math.max(0, width - cropWidth);
+            startY = 0;
+            break;
+    }
+    
+    // Copy the appropriate portion of the stretched image
+    for (let y = 0; y < cropHeight; y++) {
+        for (let x = 0; x < cropWidth; x++) {
+            const sourceX = Math.min(startX + x, width - 1);
+            const sourceY = Math.min(startY + y, height - 1);
+            const sourceIndex = (sourceY * width + sourceX) * 4;
+            const targetIndex = (y * cropWidth + x) * 4;
+            
+            for (let c = 0; c < 4; c++) {
+                croppedData[targetIndex + c] = data[sourceIndex + c];
+            }
+        }
+    }
+    
+    return {
+        data: croppedData,
+        width: cropWidth,
+        height: cropHeight
     };
 }
 
@@ -260,7 +328,7 @@ export function stretchImage(
 
                 case 'up': {
                     // Rotate 180 degrees back
-                    const tempImageData1 = new ImageData(stretchedData.data, stretchedData.width, stretchedData.height);
+                    const tempImageData1 = new ImageData(new Uint8ClampedArray(stretchedData.data), stretchedData.width, stretchedData.height);
                     let rotatedBack1 = rotateImageData(tempImageData1, true);
                     rotatedBack1 = rotateImageData(rotatedBack1, true);
                     stretchedData = {
@@ -274,7 +342,7 @@ export function stretchImage(
 
                 case 'right': {
                     // Rotate 90 degrees counterclockwise back
-                    const tempImageData2 = new ImageData(stretchedData.data, stretchedData.width, stretchedData.height);
+                    const tempImageData2 = new ImageData(new Uint8ClampedArray(stretchedData.data), stretchedData.width, stretchedData.height);
                     const rotatedBack2 = rotateImageData(tempImageData2, false);
                     stretchedData = {
                         data: rotatedBack2.data,
@@ -287,7 +355,7 @@ export function stretchImage(
 
                 case 'left': {
                     // Rotate 90 degrees clockwise back
-                    const tempImageData3 = new ImageData(stretchedData.data, stretchedData.width, stretchedData.height);
+                    const tempImageData3 = new ImageData(new Uint8ClampedArray(stretchedData.data), stretchedData.width, stretchedData.height);
                     const rotatedBack3 = rotateImageData(tempImageData3, true);
                     stretchedData = {
                         data: rotatedBack3.data,
@@ -298,6 +366,9 @@ export function stretchImage(
                     break;
                 }
             }
+
+            // Crop the stretched result to not exceed original image dimensions
+            stretchedData = cropToOriginalSize(stretchedData, imageData.width, imageData.height, direction);
 
             console.log('Stretch complete:', {
                 originalDimensions: `${imageData.width}x${imageData.height}`,
