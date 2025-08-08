@@ -338,42 +338,40 @@ export const ImageStretcher: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-black dark:to-gray-900">
-            {/* Header */}
-            <div className="text-center py-8">
-                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                    Image Stretcher
-                </h1>
-                <p className="text-lg text-slate-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    Upload an image and apply artistic stretching effects
-                </p>
-            </div>
-
-            {/* Image Upload */}
-            {!imageInfo && (
-                <div className="text-center mb-12">
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept="image/*"
-                        className="hidden"
-                    />
-                    <button onClick={() => fileInputRef.current?.click()} className="upload-btn">
-                        <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        Open Image
-                    </button>
+            {!imageInfo ? (
+                // Centered intro section when no image is loaded
+                <div className="min-h-screen flex flex-col items-center justify-center px-4">
+                    <div className="text-center">
+                        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 pb-2 leading-tight">
+                            Image Stretcher
+                        </h1>
+                        <p className="text-lg text-slate-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
+                            Upload an image and apply artistic stretching effects
+                        </p>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileUpload}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        <button onClick={() => fileInputRef.current?.click()} className="upload-btn">
+                            <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            Open Image
+                        </button>
+                    </div>
                 </div>
-            )}
+            ) : (
+                // Main app interface when image is loaded - centered vertically
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-6">
+                        {/* Hidden canvas for processing original image */}
+                        <canvas ref={originalCanvasRef} style={{ display: 'none' }} />
 
-            {imageInfo && (
-                <div className="flex flex-col lg:flex-row gap-6 p-4">
-                    {/* Hidden canvas for processing original image */}
-                    <canvas ref={originalCanvasRef} style={{ display: 'none' }} />
-
-                    {/* Processed Image - Main content area */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-4 order-1 lg:order-1">
+                        {/* Processed Image - Main content area */}
+                        <div className="flex-1 flex flex-col items-center justify-center p-4 order-1 lg:order-1">
                         <canvas
                             ref={canvasRef}
                             className="image-canvas"
@@ -391,8 +389,8 @@ export const ImageStretcher: React.FC = () => {
                     </div>
 
                     {/* Controls - Compact sidebar */}
-                    <div className="lg:w-64 flex-shrink-0 order-2 lg:order-2">
-                        <div className="controls-panel">
+                    <div className="lg:w-64 flex-shrink-0 order-2 lg:order-2 flex items-center">
+                        <div className="controls-panel w-full">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 text-center">
                                 Controls
                             </h3>
@@ -523,6 +521,7 @@ export const ImageStretcher: React.FC = () => {
                             )}
                         </div>
                     </div>
+                                    </div>
                 </div>
             )}
         </div>
