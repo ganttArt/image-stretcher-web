@@ -233,7 +233,7 @@ export const ImageStretcher: React.FC = () => {
                         // Create ImageData object for the stretched result
                         const newImageData = ctx.createImageData(stretchedImageData.width, stretchedImageData.height);
                         newImageData.data.set(stretchedImageData.data);
-                        
+
                         // Create a temporary canvas to hold the full-size stretched image
                         const tempCanvas = document.createElement('canvas');
                         const tempCtx = tempCanvas.getContext('2d')!;
@@ -372,156 +372,156 @@ export const ImageStretcher: React.FC = () => {
 
                         {/* Processed Image - Main content area */}
                         <div className="flex-1 flex flex-col items-center justify-center p-4 order-1 lg:order-1">
-                        <canvas
-                            ref={canvasRef}
-                            className="image-canvas"
-                            title={imageInfo ? `Image: ${imageInfo.file.name}` : 'Upload an image to get started'}
-                            style={{
-                                border: '2px solid #333',
-                                backgroundColor: 'white',
-                                display: 'block',
-                                maxWidth: '100%',
-                                maxHeight: '100%',
-                                width: 'auto',
-                                height: 'auto'
-                            }}
-                        />
-                    </div>
+                            <canvas
+                                ref={canvasRef}
+                                className="image-canvas"
+                                title={imageInfo ? `Image: ${imageInfo.file.name}` : 'Upload an image to get started'}
+                                style={{
+                                    border: '2px solid #333',
+                                    backgroundColor: 'white',
+                                    display: 'block',
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    width: 'auto',
+                                    height: 'auto'
+                                }}
+                            />
+                        </div>
 
-                    {/* Controls - Compact sidebar */}
-                    <div className="lg:w-64 flex-shrink-0 order-2 lg:order-2 flex items-center">
-                        <div className="controls-panel w-full">
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 text-center">
-                                Controls
-                            </h3>
+                        {/* Controls - Compact sidebar */}
+                        <div className="lg:w-64 flex-shrink-0 order-2 lg:order-2 flex items-center">
+                            <div className="controls-panel w-full">
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 text-center">
+                                    Controls
+                                </h3>
 
-                            {/* Stretch Rate Control */}
-                            <div className="control-group">
-                                <label htmlFor="stretch-rate" className="control-label">
-                                    Stretch Rate: {stretchRate}
-                                </label>
-                                <input
-                                    id="stretch-rate"
-                                    type="range"
-                                    min="1"
-                                    max="13"
-                                    value={stretchRate}
-                                    onChange={(e) => setStretchRate(parseInt(e.target.value))}
-                                    className="slider"
-                                />
-                                <div className="flex justify-between text-xs text-slate-500 dark:text-gray-400 mt-1">
-                                    <span>Gradual</span>
-                                    <span>Rapid</span>
-                                </div>
-                            </div>
-
-                            {/* Starting Pixel Control */}
-                            <div className="control-group">
-                                <label htmlFor="starting-pixel" className="control-label">
-                                    Starting Pixel: {startingPixel}
-                                </label>
-                                <input
-                                    id="starting-pixel"
-                                    type="range"
-                                    min="0"
-                                    max={getMaxStartingPixel()}
-                                    value={startingPixel}
-                                    onChange={(e) => setStartingPixel(parseInt(e.target.value))}
-                                    className="slider"
-                                />
-                            </div>
-
-                            {/* Direction Controls */}
-                            <div className="control-group">
-                                <label className="control-label">Direction</label>
-                                <div className="direction-controls">
-                                    <label className="radio-label direction-up">
-                                        <input
-                                            type="radio"
-                                            value="up"
-                                            checked={direction === 'up'}
-                                            onChange={(e) => setDirection(e.target.value as 'up')}
-                                        />
-                                        ↑
+                                {/* Stretch Rate Control */}
+                                <div className="control-group">
+                                    <label htmlFor="stretch-rate" className="control-label">
+                                        Stretch Rate: {stretchRate}
                                     </label>
-                                    <label className="radio-label direction-left">
-                                        <input
-                                            type="radio"
-                                            value="left"
-                                            checked={direction === 'left'}
-                                            onChange={(e) => setDirection(e.target.value as 'left')}
-                                        />
-                                        ←
-                                    </label>
-                                    <label className="radio-label direction-right">
-                                        <input
-                                            type="radio"
-                                            value="right"
-                                            checked={direction === 'right'}
-                                            onChange={(e) => setDirection(e.target.value as 'right')}
-                                        />
-                                        →
-                                    </label>
-                                    <label className="radio-label direction-down">
-                                        <input
-                                            type="radio"
-                                            value="down"
-                                            checked={direction === 'down'}
-                                            onChange={(e) => setDirection(e.target.value as 'down')}
-                                        />
-                                        ↓
-                                    </label>
-                                </div>
-                            </div>
-
-                            {/* Horizontal Rule */}
-                            <hr className="border-gray-200 dark:border-gray-600 my-4" />
-
-                            {/* Action Buttons */}
-                            <div className="control-group">
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="action-btn flex-1"
-                                        style={{ 
-                                            background: 'linear-gradient(to right, rgb(100 116 139), rgb(71 85 105))',
-                                            color: 'white'
-                                        }}
-                                    >
-                                        New Image
-                                    </button>
-
-                                    <button
-                                        onClick={downloadImage}
-                                        className="action-btn flex-1"
-                                        disabled={!processedImageUrl || isProcessing}
-                                        style={{ 
-                                            background: 'linear-gradient(to right, rgb(59 130 246), rgb(37 99 235))',
-                                            color: 'white'
-                                        }}
-                                    >
-                                        Save
-                                        <img src="/downloadIcon.svg" alt="Download" className="w-4 h-4 ml-2 inline" />
-                                    </button>
+                                    <input
+                                        id="stretch-rate"
+                                        type="range"
+                                        min="1"
+                                        max="13"
+                                        value={stretchRate}
+                                        onChange={(e) => setStretchRate(parseInt(e.target.value))}
+                                        className="slider"
+                                    />
+                                    <div className="flex justify-between text-xs text-slate-500 dark:text-gray-400 mt-1">
+                                        <span>Gradual</span>
+                                        <span>Rapid</span>
+                                    </div>
                                 </div>
 
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileUpload}
-                                    accept="image/*"
-                                    className="hidden"
-                                />
-                            </div>
-
-                            {isProcessing && (
-                                <div className="processing-indicator">
-                                    Processing image...
+                                {/* Starting Pixel Control */}
+                                <div className="control-group">
+                                    <label htmlFor="starting-pixel" className="control-label">
+                                        Starting Pixel: {startingPixel}
+                                    </label>
+                                    <input
+                                        id="starting-pixel"
+                                        type="range"
+                                        min="0"
+                                        max={getMaxStartingPixel()}
+                                        value={startingPixel}
+                                        onChange={(e) => setStartingPixel(parseInt(e.target.value))}
+                                        className="slider"
+                                    />
                                 </div>
-                            )}
+
+                                {/* Direction Controls */}
+                                <div className="control-group">
+                                    <label className="control-label">Direction</label>
+                                    <div className="direction-controls">
+                                        <label className="radio-label direction-up">
+                                            <input
+                                                type="radio"
+                                                value="up"
+                                                checked={direction === 'up'}
+                                                onChange={(e) => setDirection(e.target.value as 'up')}
+                                            />
+                                            ↑
+                                        </label>
+                                        <label className="radio-label direction-left">
+                                            <input
+                                                type="radio"
+                                                value="left"
+                                                checked={direction === 'left'}
+                                                onChange={(e) => setDirection(e.target.value as 'left')}
+                                            />
+                                            ←
+                                        </label>
+                                        <label className="radio-label direction-right">
+                                            <input
+                                                type="radio"
+                                                value="right"
+                                                checked={direction === 'right'}
+                                                onChange={(e) => setDirection(e.target.value as 'right')}
+                                            />
+                                            →
+                                        </label>
+                                        <label className="radio-label direction-down">
+                                            <input
+                                                type="radio"
+                                                value="down"
+                                                checked={direction === 'down'}
+                                                onChange={(e) => setDirection(e.target.value as 'down')}
+                                            />
+                                            ↓
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Horizontal Rule */}
+                                <hr className="border-gray-200 dark:border-gray-600 my-4" />
+
+                                {/* Action Buttons */}
+                                <div className="control-group">
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="action-btn flex-1"
+                                            style={{
+                                                background: 'linear-gradient(to right, rgb(100 116 139), rgb(71 85 105))',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            New Image
+                                        </button>
+
+                                        <button
+                                            onClick={downloadImage}
+                                            className="action-btn flex-1"
+                                            disabled={!processedImageUrl || isProcessing}
+                                            style={{
+                                                background: 'linear-gradient(to right, rgb(59 130 246), rgb(37 99 235))',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            Save
+                                            <img src="/downloadIcon.svg" alt="Download" className="w-4 h-4 ml-2 inline" />
+                                        </button>
+                                    </div>
+
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileUpload}
+                                        accept="image/*"
+                                        className="hidden"
+                                    />
+                                </div>
+
+                                {isProcessing && (
+                                    <div className="processing-indicator">
+                                        Processing image...
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                                    </div>
                 </div>
             )}
         </div>
