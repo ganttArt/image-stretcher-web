@@ -463,16 +463,11 @@
     }
 
     .vertical-slider {
-        writing-mode: bt-lr;
-        /* IE */
-        -webkit-appearance: slider-vertical;
-        /* WebKit */
-        appearance: slider-vertical;
         width: 8px;
         height: 100%;
-        min-height: 200px;
         background: rgb(226 232 240);
         border-radius: 4px;
+        appearance: none;
         cursor: pointer;
         outline: none;
     }
@@ -481,7 +476,7 @@
         appearance: none;
         width: 20px;
         height: 20px;
-        background: linear-gradient(to bottom, rgb(59 130 246), rgb(37 99 235));
+        background: linear-gradient(to right, rgb(59 130 246), rgb(37 99 235));
         border-radius: 50%;
         cursor: pointer;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -496,7 +491,7 @@
     .vertical-slider::-moz-range-thumb {
         width: 20px;
         height: 20px;
-        background: linear-gradient(to bottom, rgb(59 130 246), rgb(37 99 235));
+        background: linear-gradient(to right, rgb(59 130 246), rgb(37 99 235));
         border-radius: 50%;
         cursor: pointer;
         border: 0;
