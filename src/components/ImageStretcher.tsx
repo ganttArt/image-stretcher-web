@@ -173,9 +173,15 @@ export const ImageStretcher: React.FC = () => {
                 dataLength: imageData.data.length
             });
 
+            // For left and right directions, invert the starting pixel to fix coordinate mapping
+            let adjustedStartingPixel = startingPixel;
+            if (direction === 'left' || direction === 'right') {
+                adjustedStartingPixel = imageInfo.width - 1 - startingPixel;
+            }
+
             const params: StretchParams = {
                 stretchRate,
-                startingPixel,
+                startingPixel: adjustedStartingPixel,
                 direction
             };
 
@@ -325,17 +331,6 @@ export const ImageStretcher: React.FC = () => {
         document.body.removeChild(link);
     }, [processedImageUrl, imageInfo]);
 
-    // Get max value for starting pixel slider
-    const getMaxStartingPixel = useCallback(() => {
-        if (!imageInfo) return 100;
-
-        if (direction === 'up' || direction === 'down') {
-            return imageInfo.height - 1;
-        } else {
-            return imageInfo.width - 1;
-        }
-    }, [imageInfo, direction]);
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-black dark:to-gray-900">
             {!imageInfo ? (
@@ -367,25 +362,58 @@ export const ImageStretcher: React.FC = () => {
                 // Main app interface when image is loaded - centered vertically
                 <div className="min-h-screen flex items-center justify-center p-4">
                     <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-6">
-                        {/* Hidden canvas for processing original image */}
-                        <canvas ref={originalCanvasRef} style={{ display: 'none' }} />
-
                         {/* Processed Image - Main content area */}
                         <div className="flex-1 flex flex-col items-center justify-center p-4 order-1 lg:order-1">
-                            <canvas
-                                ref={canvasRef}
-                                className="image-canvas"
-                                title={imageInfo ? `Image: ${imageInfo.file.name}` : 'Upload an image to get started'}
-                                style={{
-                                    border: '2px solid #333',
-                                    backgroundColor: 'white',
-                                    display: 'block',
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    width: 'auto',
-                                    height: 'auto'
-                                }}
-                            />
+                            <div className="image-container">
+                                {/* Hidden canvas for processing original image */}
+                                <canvas ref={originalCanvasRef} style={{ display: 'none' }} />
+
+                                {/* Canvas wrapper */}
+                                <div className="canvas-wrapper">
+                                    <canvas
+                                        ref={canvasRef}
+                                        className="image-canvas"
+                                        title={imageInfo ? `Image: ${imageInfo.file.name}` : 'Upload an image to get started'}
+                                        style={{
+                                            border: '2px solid #333',
+                                            backgroundColor: 'white',
+                                            display: 'block',
+                                            maxWidth: '100%',
+                                            maxHeight: '100%',
+                                            width: 'auto',
+                                            height: 'auto'
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Horizontal slider (bottom) for left/right stretching */}
+                                <div className="horizontal-slider-container" style={{
+                                    visibility: direction === 'left' || direction === 'right' ? 'visible' : 'hidden'
+                                }}>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max={imageInfo ? imageInfo.width - 1 : 100}
+                                        value={startingPixel}
+                                        onChange={(e) => setStartingPixel(parseInt(e.target.value))}
+                                        className="horizontal-slider"
+                                    />
+                                </div>
+
+                                {/* Vertical slider (right) for up/down stretching */}
+                                <div className="vertical-slider-container" style={{
+                                    visibility: direction === 'up' || direction === 'down' ? 'visible' : 'hidden'
+                                }}>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max={imageInfo ? imageInfo.height - 1 : 100}
+                                        value={startingPixel}
+                                        onChange={(e) => setStartingPixel(parseInt(e.target.value))}
+                                        className="vertical-slider"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Controls - Compact sidebar */}
@@ -415,62 +443,63 @@ export const ImageStretcher: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Starting Pixel Control */}
-                                <div className="control-group">
-                                    <label htmlFor="starting-pixel" className="control-label">
-                                        Starting Pixel: {startingPixel}
-                                    </label>
-                                    <input
-                                        id="starting-pixel"
-                                        type="range"
-                                        min="0"
-                                        max={getMaxStartingPixel()}
-                                        value={startingPixel}
-                                        onChange={(e) => setStartingPixel(parseInt(e.target.value))}
-                                        className="slider"
-                                    />
-                                </div>
-
                                 {/* Direction Controls */}
                                 <div className="control-group">
                                     <label className="control-label">Direction</label>
                                     <div className="direction-controls">
-                                        <label className="radio-label direction-up">
-                                            <input
-                                                type="radio"
-                                                value="up"
-                                                checked={direction === 'up'}
-                                                onChange={(e) => setDirection(e.target.value as 'up')}
-                                            />
-                                            ↑
-                                        </label>
-                                        <label className="radio-label direction-left">
-                                            <input
-                                                type="radio"
-                                                value="left"
-                                                checked={direction === 'left'}
-                                                onChange={(e) => setDirection(e.target.value as 'left')}
-                                            />
-                                            ←
-                                        </label>
-                                        <label className="radio-label direction-right">
-                                            <input
-                                                type="radio"
-                                                value="right"
-                                                checked={direction === 'right'}
-                                                onChange={(e) => setDirection(e.target.value as 'right')}
-                                            />
-                                            →
-                                        </label>
-                                        <label className="radio-label direction-down">
-                                            <input
-                                                type="radio"
-                                                value="down"
-                                                checked={direction === 'down'}
-                                                onChange={(e) => setDirection(e.target.value as 'down')}
-                                            />
-                                            ↓
-                                        </label>
+                                        {/* Top row */}
+                                        <div className="direction-row">
+                                            <label className="radio-label direction-up">
+                                                <input
+                                                    type="radio"
+                                                    value="up"
+                                                    checked={direction === 'up'}
+                                                    onChange={(e) => setDirection(e.target.value as 'up')}
+                                                />
+                                                ↑
+                                            </label>
+                                        </div>
+
+                                        {/* Middle row */}
+                                        <div className="direction-row">
+                                            <label className="radio-label direction-left">
+                                                <input
+                                                    type="radio"
+                                                    value="left"
+                                                    checked={direction === 'left'}
+                                                    onChange={(e) => setDirection(e.target.value as 'left')}
+                                                />
+                                                ←
+                                            </label>
+
+                                            {/* Processing Spinner box - always visible */}
+                                            <div className="processing-spinner">
+                                                {isProcessing && <div className="spinner"></div>}
+                                            </div>
+
+                                            <label className="radio-label direction-right">
+                                                <input
+                                                    type="radio"
+                                                    value="right"
+                                                    checked={direction === 'right'}
+                                                    onChange={(e) => setDirection(e.target.value as 'right')}
+                                                />
+                                                →
+                                            </label>
+                                        </div>
+
+                                        {/* Bottom row */}
+                                        <div className="direction-row">
+                                            <label className="radio-label direction-down">
+                                                <input
+                                                    type="radio"
+                                                    value="down"
+                                                    checked={direction === 'down'}
+                                                    onChange={(e) => setDirection(e.target.value as 'down')}
+                                                />
+                                                ↓
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -494,7 +523,6 @@ export const ImageStretcher: React.FC = () => {
                                         <button
                                             onClick={downloadImage}
                                             className="action-btn flex-1"
-                                            disabled={!processedImageUrl || isProcessing}
                                             style={{
                                                 background: 'linear-gradient(to right, rgb(59 130 246), rgb(37 99 235))',
                                                 color: 'white'
@@ -513,12 +541,6 @@ export const ImageStretcher: React.FC = () => {
                                         className="hidden"
                                     />
                                 </div>
-
-                                {isProcessing && (
-                                    <div className="processing-indicator">
-                                        Processing image...
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>

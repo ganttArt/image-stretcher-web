@@ -150,25 +150,25 @@ function buildNewImage(indexList: number[], sourceImageData: ImageData, starting
  */
 function cropToOriginalSize(stretchedData: StretchedImageData, originalWidth: number, originalHeight: number, direction: 'up' | 'down' | 'left' | 'right'): StretchedImageData {
     const { width, height, data } = stretchedData;
-    
+
     // Always crop to exact original dimensions
     const cropWidth = originalWidth;
     const cropHeight = originalHeight;
-    
+
     // If already the correct size, return as-is
     if (width === cropWidth && height === cropHeight) {
         return stretchedData;
     }
-    
+
     console.log('Cropping stretched image from', `${width}x${height}`, 'to', `${cropWidth}x${cropHeight}`, 'direction:', direction);
-    
+
     // Create cropped data
     const croppedData = new Uint8ClampedArray(cropWidth * cropHeight * 4);
-    
+
     // Determine starting positions based on direction
     let startX = 0;
     let startY = 0;
-    
+
     switch (direction) {
         case 'down':
             // Keep top part, crop bottom
@@ -191,7 +191,7 @@ function cropToOriginalSize(stretchedData: StretchedImageData, originalWidth: nu
             startY = 0;
             break;
     }
-    
+
     // Copy the appropriate portion of the stretched image
     for (let y = 0; y < cropHeight; y++) {
         for (let x = 0; x < cropWidth; x++) {
@@ -199,13 +199,13 @@ function cropToOriginalSize(stretchedData: StretchedImageData, originalWidth: nu
             const sourceY = Math.min(startY + y, height - 1);
             const sourceIndex = (sourceY * width + sourceX) * 4;
             const targetIndex = (y * cropWidth + x) * 4;
-            
+
             for (let c = 0; c < 4; c++) {
                 croppedData[targetIndex + c] = data[sourceIndex + c];
             }
         }
     }
-    
+
     return {
         data: croppedData,
         width: cropWidth,
